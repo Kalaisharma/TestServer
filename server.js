@@ -133,24 +133,24 @@ app.post('/api/bulk-insert', async (req, res) => {
 
     // Method 1: Individual inserts (slower but simple)
 
-    const result = [];
-    for (const user of users) {
-      const results = await pool.query(
-        'INSERT INTO test_users (name, email) VALUES ($1, $2) RETURNING id',
-        [user.name, user.email]
-      );
-      result.push(results.rows[0]);
-    }
+    // const result = [];
+    // for (const user of users) {
+    //   const results = await pool.query(
+    //     'INSERT INTO test_users (name, email) VALUES ($1, $2) RETURNING id',
+    //     [user.name, user.email]
+    //   );
+    //   result.push(results.rows[0]);
+    // }
 
     // Method 2: Batch insert using UNNEST (FASTEST)
-    // const names = users.map(u => u.name);
-    // const emails = users.map(u => u.email);
+    const names = users.map(u => u.name);
+    const emails = users.map(u => u.email);
 
-    // const result = await pool.query(`
-    //   INSERT INTO test_users (name, email) 
-    //   SELECT * FROM UNNEST($1::text[], $2::text[])
-    //   RETURNING id
-    // `, [names, emails]);
+    const result = await pool.query(`
+      INSERT INTO test_users (name, email) 
+      SELECT * FROM UNNEST($1::text[], $2::text[])
+      RETURNING id
+    `, [names, emails]);
 
     const endTime = Date.now();
     const duration = (endTime - startTime) / 1000;
