@@ -20,9 +20,13 @@ app.use(express.json());
 app.use("/api", protocolRouter);
 
 // SPA fallback
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "dist/index.html"));
-});
+// app.get("*", (req, res) => {
+//   if (!req.path.startsWith("/api")) {
+//     res.sendFile(path.join(__dirname, "dist/index.html"));
+//   } else {
+//     res.status(404).json({ error: "API endpoint not found" });
+//   }
+// });
 
 // Test database connection
 app.get("/api/test-db", async (req, res) => {
