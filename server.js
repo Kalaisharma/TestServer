@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
 require("dotenv").config();
 const protocolRouter = require("./routes/protocols");
 
@@ -242,7 +243,7 @@ const startServer = async () => {
       process.exit(1);
     }
 
-    app.listen(PORT, () => {
+    app.listen(PORT,"0.0.0.0", () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`);
       console.log(
         `📊 Connected to PostgreSQL on Raspberry Pi: ${process.env.DB_HOST}`
