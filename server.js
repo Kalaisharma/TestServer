@@ -255,7 +255,7 @@ const startServer = async () => {
       process.exit(1);
     }
 
-    app.listen(PORT, "192.168.1.12", () => {
+    app.listen(PORT, "0.0.0.0", () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`);
       console.log(
         `📊 Connected to PostgreSQL on Raspberry Pi: ${process.env.DB_HOST}`
