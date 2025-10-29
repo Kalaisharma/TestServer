@@ -10,6 +10,13 @@ const PORT = process.env.SERVER_PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
+app.use((req, res, next) => {
+  console.log("🟢 INCOMING REQUEST:", req.method, req.url);
+  console.log("🟢 Headers:", req.headers);
+  console.log("🟢 Body:", req.body);
+  next();
+});
+
 // Use protocol routes
 app.use("/api", protocolRouter);
 

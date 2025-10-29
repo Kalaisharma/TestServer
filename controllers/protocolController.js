@@ -7,6 +7,10 @@ const getAllProtocols = async (req, res) => {
       "SELECT * FROM protocols ORDER BY created_at DESC"
     );
     console.log(result.rows, "result.rows");
+        process.stdout.write(
+          "🟢 Check terminal for body"
+        );
+
 
     res.json({
       success: true,
