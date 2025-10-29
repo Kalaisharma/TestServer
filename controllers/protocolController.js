@@ -7,6 +7,7 @@ const getAllProtocols = async (req, res) => {
       "SELECT * FROM protocols ORDER BY created_at DESC"
     );
     console.log(result.rows, "result.rows");
+    
     res.json({
       success: true,
       count: result.rowCount,

@@ -6,6 +6,10 @@ const protocolRouter = require("./routes/protocols");
 const { pool, testConnection } = require("./database/db");
 
 const app = express();
+
+// Serve static files from frontend build
+app.use(express.static(path.join(__dirname, "dist")));
+
 const PORT = process.env.SERVER_PORT || 3000;
 
 app.use(cors());
@@ -13,6 +17,11 @@ app.use(express.json());
 
 // Use protocol routes
 app.use("/api", protocolRouter);
+
+// SPA fallback
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "dist/index.html"));
+});
 
 // Test database connection
 app.get("/api/test-db", async (req, res) => {
@@ -238,11 +247,23 @@ const startServer = async () => {
       console.log(
         `📊 Connected to PostgreSQL on Raspberry Pi: ${process.env.DB_HOST}`
       );
+        console.log(`📱 Local: http://localhost:${PORT}`);
+        console.log(`🌐 LAN: http://${getLocalIP()}:${PORT}`);
     });
   } catch (error) {
     console.error("Failed to start server:", error);
     process.exit(1);
   }
 };
+
+function getLocalIP() {
+  const interfaces = require("os").networkInterfaces();
+  for (const interface of Object.values(interfaces).flat()) {
+    if (interface.family === "IPv4" && !interface.internal) {
+      return interface.address;
+    }
+  }
+  return "localhost";
+}
 
 startServer();
