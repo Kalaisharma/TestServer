@@ -4,6 +4,13 @@ const path = require("path");
 const http = require("http");
 const socketIo = require("socket.io");
 
+require("dotenv").config();
+const protocolRouter = require("./routes/protocols");
+
+const { pool, testConnection } = require("./database/db");
+
+const app = express();
+
 // Create HTTP server
 const server = http.createServer(app);
 const io = socketIo(server, {
@@ -12,12 +19,6 @@ const io = socketIo(server, {
     methods: ["GET", "POST"],
   },
 });
-require("dotenv").config();
-const protocolRouter = require("./routes/protocols");
-
-const { pool, testConnection } = require("./database/db");
-
-const app = express();
 
 // Socket.io connection handling
 io.on("connection", (socket) => {
