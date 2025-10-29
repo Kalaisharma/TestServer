@@ -7,7 +7,7 @@ const getAllProtocols = async (req, res) => {
       "SELECT * FROM protocols ORDER BY created_at DESC"
     );
     console.log(result.rows, "result.rows");
-    
+
     res.json({
       success: true,
       count: result.rowCount,
@@ -38,6 +38,13 @@ const createProtocol = async (req, res) => {
       'INSERT INTO protocols ("protocolName", description, equipment) VALUES ($1, $2, $3) RETURNING *',
       [protocolName, description, JSON.stringify(equipment) || "No equipment"]
     );
+    
+    // 🔥 Send Socket.io signal to all clients
+    io.emit("protocol_created", {
+      type: "PROTOCOL_CREATED",
+      message: "New protocol created",
+      data: result.rows[0],
+    });
 
     res.status(201).json({
       success: true,

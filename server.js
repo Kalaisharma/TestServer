@@ -1,12 +1,32 @@
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
+const http = require("http");
+const socketIo = require("socket.io");
+
+// Create HTTP server
+const server = http.createServer(app);
+const io = socketIo(server, {
+  cors: {
+    origin: "*", // Or specify your frontend URL
+    methods: ["GET", "POST"],
+  },
+});
 require("dotenv").config();
 const protocolRouter = require("./routes/protocols");
 
 const { pool, testConnection } = require("./database/db");
 
 const app = express();
+
+// Socket.io connection handling
+io.on("connection", (socket) => {
+  console.log("🔌 New client connected:", socket.id);
+
+  socket.on("disconnect", () => {
+    console.log("🔌 Client disconnected:", socket.id);
+  });
+});
 
 // Serve static files from frontend build
 app.use(express.static(path.join(__dirname, "dist")));
@@ -260,6 +280,7 @@ const startServer = async () => {
       console.log(
         `📊 Connected to PostgreSQL on Raspberry Pi: ${process.env.DB_HOST}`
       );
+      console.log(`🔌 WebSocket server ready`);
       console.log(`📱 Local: http://localhost:${PORT}`);
       console.log(`🌐 LAN: http://${getLocalIP()}:${PORT}`);
     });
