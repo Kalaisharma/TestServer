@@ -7,11 +7,6 @@ const getAllProtocols = async (req, res) => {
       "SELECT * FROM protocols ORDER BY created_at DESC"
     );
     console.log(result.rows, "result.rows");
-        process.stdout.write(
-          "🟢 Check terminal for body"
-        );
-
-
     res.json({
       success: true,
       count: result.rowCount,
@@ -30,7 +25,7 @@ const getAllProtocols = async (req, res) => {
 const createProtocol = async (req, res) => {
   try {
     const { protocolName, description, equipment } = req.body;
-    console.log(req.body, "req.body");
+    console.log(protocolName, description, equipment, "protocol data");
     // Validate required fields
     if (!protocolName || !description) {
       return res.status(400).json({
