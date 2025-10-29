@@ -13,7 +13,12 @@ app.use(express.static(path.join(__dirname, "dist")));
 
 const PORT = process.env.SERVER_PORT || 3000;
 
-app.use(cors());
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "http://192.168.1.31:3000"],
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 // Use protocol routes
@@ -74,7 +79,6 @@ app.post("/api/setup", async (req, res) => {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
-
 
     res.json({
       success: true,
@@ -251,13 +255,13 @@ const startServer = async () => {
       process.exit(1);
     }
 
-    app.listen(PORT,"0.0.0.0", () => {
+    app.listen(PORT, "0.0.0.0", () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`);
       console.log(
         `📊 Connected to PostgreSQL on Raspberry Pi: ${process.env.DB_HOST}`
       );
-        console.log(`📱 Local: http://localhost:${PORT}`);
-        console.log(`🌐 LAN: http://${getLocalIP()}:${PORT}`);
+      console.log(`📱 Local: http://localhost:${PORT}`);
+      console.log(`🌐 LAN: http://${getLocalIP()}:${PORT}`);
     });
   } catch (error) {
     console.error("Failed to start server:", error);
