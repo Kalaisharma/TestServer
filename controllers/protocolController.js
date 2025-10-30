@@ -1,5 +1,4 @@
 const { pool } = require("../database/db");
-const { io } =require("../server")
 
 // GET /protocols - Get all protocols
 const getAllProtocols = async (req, res) => {
@@ -40,7 +39,8 @@ const createProtocol = async (req, res) => {
       [protocolName, description, JSON.stringify(equipment) || "No equipment"]
     );
 
-    // 🔥 Send Socket.io signal to all clients
+    // 🔥 GET io FROM req.app INSTEAD
+    const io = req.app.get("io");
     io.emit("protocol_created", {
       type: "PROTOCOL_CREATED",
       message: "New protocol created",
