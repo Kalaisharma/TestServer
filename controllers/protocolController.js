@@ -39,18 +39,24 @@ const createProtocol = async (req, res) => {
       [protocolName, description, JSON.stringify(equipment) || "No equipment"]
     );
 
+     const result1 = await pool.query(
+       'INSERT INTO audit_logs (action) VALUES ($1) RETURNING *',
+       ["New Protocol created: " + protocolName]
+     );
+
     // 🔥 GET io FROM req.app INSTEAD
     const io = req.app.get("io");
     io.emit("protocol_created", {
       type: "PROTOCOL_CREATED",
       message: "New protocol created",
       data: result.rows[0],
+      data1: result1.rows[0],
     });
 
     res.status(201).json({
       success: true,
       message: "Protocol created successfully",
-      //data: result.rows[0],
+      data: result.rows[0],
     });
   } catch (error) {
     console.error("Error creating protocol:", error);
@@ -86,6 +92,11 @@ const updateProtocol = async (req, res) => {
         error: "Protocol not found",
       });
     }
+    
+    const result1 = await pool.query(
+      'INSERT INTO audit_logs (action) VALUES ($1) RETURNING *',
+      ["Protocol updated: " + protocolName]
+    );
 
     res.json({
       success: true,
