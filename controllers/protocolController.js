@@ -38,7 +38,7 @@ const createProtocol = async (req, res) => {
       'INSERT INTO protocols ("protocolName", description, equipment) VALUES ($1, $2, $3) RETURNING *',
       [protocolName, description, JSON.stringify(equipment) || "No equipment"]
     );
-    
+
     // 🔥 Send Socket.io signal to all clients
     io.emit("protocol_created", {
       type: "PROTOCOL_CREATED",
@@ -75,7 +75,7 @@ const updateProtocol = async (req, res) => {
     }
 
     const result = await pool.query(
-        `UPDATE protocols SET "protocolName" = $1, description = $2, equipment = $3, updated_at = CURRENT_TIMESTAMP WHERE id = $4 RETURNING *`,
+      `UPDATE protocols SET "protocolName" = $1, description = $2, equipment = $3, updated_at = CURRENT_TIMESTAMP WHERE id = $4 RETURNING *`,
       [protocolName, description, JSON.stringify(equipment), id]
     );
 
