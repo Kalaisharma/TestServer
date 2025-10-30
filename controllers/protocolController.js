@@ -1,5 +1,5 @@
 const { pool } = require("../database/db");
-const { io } = require("../server");
+const { io } =require("../server")
 
 // GET /protocols - Get all protocols
 const getAllProtocols = async (req, res) => {

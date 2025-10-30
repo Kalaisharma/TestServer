@@ -307,3 +307,5 @@ function getLocalIP() {
 }
 
 startServer();
+module.exports = { app, server, io };
+
