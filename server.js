@@ -103,6 +103,7 @@ app.post("/api/setup", async (req, res) => {
         "protocolName" VARCHAR(100) NOT NULL,
         description TEXT,
         equipment TEXT,
+        active BOOLEAN DEFAULT TRUE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
@@ -117,62 +118,6 @@ app.post("/api/setup", async (req, res) => {
       success: false,
       error: error.message,
     });
-  }
-});
-
-// Get all users
-app.get("/api/users", async (req, res) => {
-  try {
-    const result = await pool.query(
-      "SELECT * FROM test_users ORDER BY created_at DESC"
-    );
-    res.json({
-      success: true,
-      count: result.rowCount,
-      data: result.rows,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error.message,
-    });
-  }
-});
-
-// Create new user
-app.post("/api/users", async (req, res) => {
-  try {
-    const { name, email } = req.body;
-
-    if (!name || !email) {
-      return res.status(400).json({
-        success: false,
-        error: "Name and email are required",
-      });
-    }
-
-    const result = await pool.query(
-      "INSERT INTO test_users (name, email) VALUES ($1, $2) RETURNING *",
-      [name, email]
-    );
-
-    res.status(201).json({
-      success: true,
-      message: "User created successfully",
-      data: result.rows[0],
-    });
-  } catch (error) {
-    if (error.code === "23505") {
-      res.status(400).json({
-        success: false,
-        error: "Email already exists",
-      });
-    } else {
-      res.status(500).json({
-        success: false,
-        error: error.message,
-      });
-    }
   }
 });
 
