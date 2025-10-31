@@ -8,12 +8,22 @@ const login = async (req, res) => {
       "SELECT * FROM user_accounts WHERE username = $1",
       [username]
     );
-    if (!user.rows[0] || !user.rows[0].status) {
+      if (!user.rows[0] || !user.rows[0].status) {
+        await pool.query(
+          "INSERT INTO audit_logs (action) VALUES ($1)",
+          ["Login failed: User not found or inactive: Username: " + username]
+        );
       return res.status(401).json({ message: "User not found or inactive" });
     }
-    if (!(await bcrypt.compare(password, user.rows[0].password))) {
+      if (!(await bcrypt.compare(password, user.rows[0].password))) {
+         await pool.query("INSERT INTO audit_logs (action) VALUES ($1)", [
+           "Login failed: Invalid password: Username: " + username,
+         ]);
       return res.status(401).json({ message: "Invalid password" });
     }
+    await pool.query("INSERT INTO audit_logs (action) VALUES ($1)", [
+      "Login successful: Username: " + username,
+    ]);
     return res.status(200).json({ message: "Login successful" });
   } catch (error) {
     console.error("Login error:", error);
