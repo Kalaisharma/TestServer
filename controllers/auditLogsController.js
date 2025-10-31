@@ -14,9 +14,13 @@ const getAuditLogs = async (req, res) => {
         [`${action}%`]
       );
     }
-    const actions = await pool.query(
-      "SELECT DISTINCT action FROM audit_logs"
-    );
+    const actions = await pool.query(`
+  SELECT DISTINCT 
+    SUBSTRING(action FROM '^[^:]+') as action_type
+  FROM audit_logs 
+  WHERE action LIKE '%:%'
+  ORDER BY action_type
+`);
     res.json({
       success: true,
       data: result.rows,
