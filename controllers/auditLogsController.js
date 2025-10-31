@@ -1,7 +1,8 @@
 const { pool } = require("../database/db");
 
 const getAuditLogs = async (req, res) => {
-  const { action } = req.query.action;
+  const action = req.query;
+  console.log(action, "action");
   try {
     const result = await pool.query(
       "SELECT * FROM audit_logs WHERE action ILIKE $1 ORDER BY created_at DESC",
