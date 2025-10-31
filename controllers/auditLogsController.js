@@ -1,7 +1,7 @@
 const { pool } = require("../database/db");
 
 const getAuditLogs = async (req, res) => {
-  const action = req.query;
+  const { action } = req.query;
   console.log(action, "action");
   try {
     const result = await pool.query(
