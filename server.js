@@ -123,7 +123,7 @@ app.post("/api/setup", async (req, res) => {
      await pool.query(`
       CREATE TABLE IF NOT EXISTS user_accounts (
         id SERIAL PRIMARY KEY,
-        email VARCHAR(100) UNIQUE NOT NULL,
+        username VARCHAR(100) UNIQUE NOT NULL,
         password VARCHAR(100) NOT NULL,
         role VARCHAR(100) NOT NULL,
         status BOOLEAN DEFAULT TRUE,
