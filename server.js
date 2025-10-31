@@ -7,7 +7,7 @@ const socketIo = require("socket.io");
 require("dotenv").config();
 const protocolRouter = require("./routes/protocols");
 const auditRouter = require("./routes/auditRoutes");
-
+const authRouter = require("./routes/authRoutes");
 const { pool, testConnection } = require("./database/db");
 
 const app = express();
@@ -53,6 +53,7 @@ app.use(express.json());
 // Use protocol routes
 app.use("/api", protocolRouter);
 app.use("/api", auditRouter);
+app.use("/api", authRouter);
 
 // SPA fallback
 // app.get("/*", (req, res) => {
@@ -115,6 +116,17 @@ app.post("/api/setup", async (req, res) => {
       CREATE TABLE IF NOT EXISTS audit_logs (
         id SERIAL PRIMARY KEY,
         action VARCHAR(100) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+     await pool.query(`
+      CREATE TABLE IF NOT EXISTS user_accounts (
+        id SERIAL PRIMARY KEY,
+        email VARCHAR(100) UNIQUE NOT NULL,
+        password VARCHAR(100) NOT NULL,
+        role VARCHAR(100) NOT NULL,
+        status BOOLEAN DEFAULT TRUE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);

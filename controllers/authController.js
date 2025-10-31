@@ -1,0 +1,36 @@
+const bcrypt = require("bcrypt");
+const { pool } = require("../database/db");
+
+const login = async (req, res) => {
+  const { email, password } = req.body;
+  const user = await pool.query(
+    "SELECT * FROM user_accounts WHERE email = $1",
+    [email]
+  );
+  if (!user.rows[0] || !user.rows[0].status) {
+    return res.status(401).json({ message: "User not found or inactive" });
+  }
+  if (!(await bcrypt.compare(password, user.rows[0].password))) {
+    return res.status(401).json({ message: "Invalid password" });
+  }
+  return res.status(200).json({ message: "Login successful" });
+};
+
+const register = async (req, res) => {
+  const { email, password, role } = req.body;
+  const current_user = await pool.query(
+    "SELECT * FROM user_accounts WHERE email = $1",
+    [email]
+  );
+  if (current_user.rows[0]) {
+    return res.status(400).json({ message: "User already exists" });
+  }
+  const hashed_password = await bcrypt.hash(password, 10);
+  const user = await pool.query(
+    "INSERT INTO user_accounts (email, password, role) VALUES ($1, $2, $3)",
+    [email, hashed_password, role]
+  );
+  return res.status(200).json({ message: "Register successful" });
+};
+
+module.exports = { login, register };
