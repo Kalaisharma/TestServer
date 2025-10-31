@@ -2,7 +2,6 @@ const { pool } = require("../database/db");
 
 const getAuditLogs = async (req, res) => {
   const { action } = req.query;
-  console.log(action, "action");
   try {
     let result;
     if (!action) {
@@ -15,9 +14,13 @@ const getAuditLogs = async (req, res) => {
         [`${action}%`]
       );
     }
+    const actions = await pool.query(
+      "SELECT DISTINCT action FROM audit_logs"
+    );
     res.json({
       success: true,
       data: result.rows,
+      actions: actions.rows,
     });
   } catch (error) {
     res.status(500).json({
