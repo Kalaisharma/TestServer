@@ -21,6 +21,8 @@ const getAuditLogs = async (req, res) => {
   WHERE action LIKE '%:%'
   ORDER BY action_type
 `);
+    console.log(actions);
+    
     res.json({
       success: true,
       data: result.rows,
