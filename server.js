@@ -64,8 +64,19 @@ app.use("/api", authRouter);
 //   }
 // });
 
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "dist/index.html"));
+// app.get("/", (req, res) => {
+//   res.sendFile(path.join(__dirname, "dist/index.html"));
+// });
+
+// SPA fallback - must be after API routes but before error handling
+app.get('*', (req, res) => {
+  // Don't handle API routes with SPA fallback
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ error: 'API endpoint not found' });
+  }
+  
+  // For all other routes, serve the index.html
+  res.sendFile(path.join(__dirname, 'dist/index.html'));
 });
 
 // Test database connection
