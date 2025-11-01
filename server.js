@@ -58,13 +58,19 @@ app.use("/api", authRouter);
 
 // ✅ Serve static files from dist folder
 app.use(express.static(path.join(__dirname, "dist")));
-
 // ✅ SPA fallback - MUST be after static files
-app.get("/", (req, res) => {
-  console.log("req.path", req.path);
-  if (!req.path.startsWith("/api/")) {
+
+app.get("*", (req, res) => {
+  // ✅ Use '*' to catch ALL routes
+  console.log("🔄 SPA Fallback triggered for path:", req.path);
+
+  // Don't handle API routes with SPA fallback
+  if (req.path.startsWith("/api/")) {
+    console.log("❌ API route not found:", req.path);
     return res.status(404).json({ error: "API endpoint not found" });
   }
+
+  console.log("✅ Serving index.html for:", req.path);
   res.sendFile(path.join(__dirname, "dist/index.html"));
 });
 
