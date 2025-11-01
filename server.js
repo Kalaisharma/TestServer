@@ -61,6 +61,7 @@ app.use(express.static(path.join(__dirname, "dist")));
 
 // ✅ SPA fallback - MUST be after static files
 app.get("/", (req, res) => {
+  console.log("req.path", req.path);
   if (!req.path.startsWith("/api/")) {
     return res.status(404).json({ error: "API endpoint not found" });
   }
