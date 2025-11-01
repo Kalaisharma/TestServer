@@ -3,6 +3,7 @@ const cors = require("cors");
 const path = require("path");
 const http = require("http");
 const socketIo = require("socket.io");
+const cookieParser = require("cookie-parser");
 
 require("dotenv").config();
 const protocolRouter = require("./routes/protocols");
@@ -46,6 +47,7 @@ app.use(
   })
 );
 app.use(express.json());
+app.use(cookieParser());
 
 // Use protocol routes
 app.use("/api", protocolRouter);
