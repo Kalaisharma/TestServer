@@ -15,6 +15,8 @@ const app = express();
 
 // Create HTTP server
 const server = http.createServer(app);
+app.use(express.json());
+app.use(cookieParser());
 const io = socketIo(server, {
   cors: {
     origin: [
@@ -46,8 +48,7 @@ app.use(
     credentials: true,
   })
 );
-app.use(express.json());
-app.use(cookieParser());
+
 
 // Use protocol routes
 app.use("/api", protocolRouter);
