@@ -37,7 +37,6 @@ io.on("connection", (socket) => {
   });
 });
 
-
 const PORT = process.env.SERVER_PORT || 3000;
 
 app.use(
@@ -53,7 +52,6 @@ app.use("/api", protocolRouter);
 app.use("/api", auditRouter);
 app.use("/api", authRouter);
 
-
 // app.get("/", (req, res) => {
 //   res.sendFile(path.join(__dirname, "dist/index.html"));
 // });
@@ -61,14 +59,24 @@ app.use("/api", authRouter);
 // ✅ Serve static files from dist folder
 app.use(express.static(path.join(__dirname, "dist")));
 
-// ✅ SPA fallback - MUST be after static files
-app.get('*', (req, res) => {
-  if (req.path.startsWith('/api/')) {
-    return res.status(404).json({ error: 'API endpoint not found' });
+// ✅ SPA fallback - MUST be after static files and API routes
+// Only catch GET requests that are NOT API routes and NOT static files
+app.get("*", (req, res) => {
+  // Skip API routes (these should be handled by routers above)
+  // If an API route reaches here, it means no router matched it - return 404
+  if (req.path.startsWith("/api/")) {
+    return res.status(404).json({ error: "API endpoint not found" });
   }
-  res.sendFile(path.join(__dirname, 'dist/index.html'));
+  // Skip if it's likely a static file request (has a file extension)
+  // Static files are handled by express.static above, so if we reach here, file doesn't exist
+  if (
+    req.path.match(/\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$/)
+  ) {
+    return res.status(404).json({ error: "File not found" });
+  }
+  // Otherwise, serve the SPA index.html for client-side routing
+  res.sendFile(path.join(__dirname, "dist/index.html"));
 });
-
 
 // Test database connection
 app.get("/api/test-db", async (req, res) => {
@@ -122,7 +130,7 @@ app.post("/api/setup", async (req, res) => {
       )
     `);
 
-     await pool.query(`
+    await pool.query(`
       CREATE TABLE IF NOT EXISTS user_accounts (
         id SERIAL PRIMARY KEY,
         username VARCHAR(100) UNIQUE NOT NULL,
