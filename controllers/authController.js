@@ -1,4 +1,5 @@
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 const { pool } = require("../database/db");
 
 const login = async (req, res) => {
@@ -23,7 +24,30 @@ const login = async (req, res) => {
     await pool.query("INSERT INTO audit_logs (action) VALUES ($1)", [
       "Login successful: Username: " + username,
     ]);
-    return res.status(200).json({ message: "Login successful" });
+    const token = jwt.sign(
+      {
+        username: user.rows[0].username,
+        role: user.rows[0].role,
+        id: user.rows[0].id,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+    res.cookie("authToken", token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+      maxAge: 1000 * 60 * 60 * 1,
+      path: "/",
+    });
+    return res.status(200).json({
+      message: "Login successful",
+      user: {
+        username: user.rows[0].username,
+        role: user.rows[0].role,
+        id: user.rows[0].id,
+      },
+    });
   } catch (error) {
     console.error("Login error:", error);
     return res.status(500).json({ message: "Internal server error" });
