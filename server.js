@@ -37,8 +37,6 @@ io.on("connection", (socket) => {
   });
 });
 
-// Serve static files from frontend build
-app.use(express.static(path.join(__dirname, "dist")));
 
 const PORT = process.env.SERVER_PORT || 3000;
 
@@ -55,29 +53,22 @@ app.use("/api", protocolRouter);
 app.use("/api", auditRouter);
 app.use("/api", authRouter);
 
-// SPA fallback
-// app.get("/*", (req, res) => {
-//   if (!req.path.startsWith("/api")) {
-//     res.sendFile(path.join(__dirname, "dist/index.html"));
-//   } else {
-//     res.status(404).json({ error: "API endpoint not found" });
-//   }
-// });
 
 // app.get("/", (req, res) => {
 //   res.sendFile(path.join(__dirname, "dist/index.html"));
 // });
 
-// SPA fallback - must be after API routes but before error handling
+// ✅ Serve static files from dist folder
+app.use(express.static(path.join(__dirname, "dist")));
+
+// ✅ SPA fallback - MUST be after static files
 app.get('*', (req, res) => {
-  // Don't handle API routes with SPA fallback
   if (req.path.startsWith('/api/')) {
     return res.status(404).json({ error: 'API endpoint not found' });
   }
-  
-  // For all other routes, serve the index.html
   res.sendFile(path.join(__dirname, 'dist/index.html'));
 });
+
 
 // Test database connection
 app.get("/api/test-db", async (req, res) => {
