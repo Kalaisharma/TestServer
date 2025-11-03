@@ -85,4 +85,23 @@ const getUsers = async (req, res) => {
     return res.status(500).json({ message: "Internal server error", error: error.message });
   }
 };  
-module.exports = { login, register, getUsers };
+
+const logout = async (req, res) => {
+  try {
+    res.clearCookie("authToken", {
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax",
+      maxAge: 0,
+      path: "/",
+    });
+    await pool.query("INSERT INTO audit_logs (action) VALUES ($1)", [
+      "Logout successful: Username: " + req.user.username,
+    ]);
+    return res.status(200).json({ message: "Logout successful" });
+  } catch (error) {
+    console.error("Logout error:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+module.exports = { login, register, getUsers, logout };
