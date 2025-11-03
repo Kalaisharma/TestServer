@@ -6,7 +6,7 @@ const {
   updateProtocol,
   getProtocolById,
 } = require("../controllers/protocolController");
-const verifyToken = require("../middleware/authmiddleware").default;
+const verifyToken = require("../middleware/authmiddleware");
 // GET /protocols - Get all protocols
 router.get("/protocols", verifyToken, getAllProtocols);
 
