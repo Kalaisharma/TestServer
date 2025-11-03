@@ -82,9 +82,11 @@ const getUsers = async (req, res) => {
     return res.status(200).json({ users: users.rows });
   } catch (error) {
     console.error("Get users error:", error);
-    return res.status(500).json({ message: "Internal server error", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
-};  
+};
 
 const logout = async (req, res) => {
   try {
@@ -100,7 +102,7 @@ const logout = async (req, res) => {
       });
     }
     await pool.query("INSERT INTO audit_logs (action) VALUES ($1)", [
-      "Logout successful: Username: " + username
+      "Logout successful: Username: " + username,
     ]);
     return res.status(200).json({ message: "Logout successful" });
   } catch (error) {
@@ -111,16 +113,26 @@ const logout = async (req, res) => {
 const updateUserStatus = async (req, res) => {
   try {
     const { id } = req.params;
-    const user = await pool.query("SELECT * FROM user_accounts WHERE id = $1", [id]);
+    const user = await pool.query("SELECT * FROM user_accounts WHERE id = $1", [
+      id,
+    ]);
     if (!user.rows[0] || !user.rows[0].status) {
       return res.status(404).json({ message: "User not found or inactive" });
     }
     const status = !user.rows[0].status;
-    await pool.query("UPDATE user_accounts SET status = $1 WHERE id = $2", [status, id]);
-    await pool.query("INSERT INTO audit_logs (action) VALUES ($1)", [
-      "User status updated: Username: " + user.rows[0].username + " Status: " + status.toString()
+    await pool.query("UPDATE user_accounts SET status = $1 WHERE id = $2", [
+      status,
+      id,
     ]);
-    return res.status(200).json({ message: "User status updated", status: status.toString() });
+    await pool.query("INSERT INTO audit_logs (action) VALUES ($1)", [
+      "User status updated: Username: " +
+        user.rows[0].username +
+        " Status: " +
+        status.toString(),
+    ]);
+    return res
+      .status(200)
+      .json({ message: "User status updated", status: status.toString() });
   } catch (error) {
     console.error("Update user status error:", error);
     return res.status(500).json({ message: "Internal server error" });

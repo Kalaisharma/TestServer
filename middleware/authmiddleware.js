@@ -5,8 +5,6 @@ const verifyToken = (req, res, next) => {
   console.log(req.cookies, "req.cookies");
 
   const token = req.cookies.authToken;
-  console.log(token, "token");
-
   if (!token) {
     return res.status(401).json({
       success: false,
@@ -15,7 +13,11 @@ const verifyToken = (req, res, next) => {
   }
 
   try {
+    console.log("before token verification");
+
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log("after token verification");
+
     req.user = decoded;
     next();
   } catch (error) {

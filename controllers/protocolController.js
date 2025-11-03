@@ -6,7 +6,6 @@ const getAllProtocols = async (req, res) => {
     const result = await pool.query(
       "SELECT * FROM protocols ORDER BY created_at DESC"
     );
-    console.log(result.rows, "result.rows");
 
     res.json({
       success: true,
@@ -26,7 +25,6 @@ const getAllProtocols = async (req, res) => {
 const createProtocol = async (req, res) => {
   try {
     const { protocolName, description, equipment } = req.body;
-    console.log(protocolName, description, equipment, "protocol data");
     // Validate required fields
     if (!protocolName || !description) {
       return res.status(400).json({

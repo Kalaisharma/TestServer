@@ -32,9 +32,14 @@ const testConnection = async () => {
     const result = await client.query(
       "SELECT version(), current_database(), current_user"
     );
-    console.log("✅ Database version:", result.rows[0].version.split(",")[0]);
-    console.log("✅ Current database:", result.rows[0].current_database);
-    console.log("✅ Current user:", result.rows[0].current_user);
+    console.log(
+      "✅ Database version:",
+      result.rows[0].version.split(",")[0],
+      "✅ Current database:",
+      result.rows[0].current_database,
+      "✅ Current user:",
+      result.rows[0].current_user
+    );
 
     client.release();
     return true;
