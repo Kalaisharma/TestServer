@@ -78,7 +78,7 @@ const register = async (req, res) => {
 
 const getUsers = async (req, res) => {
   try {
-    const users = await pool.query("SELECT * FROM user_accounts");
+    const users = await pool.query("SELECT * FROM user_accounts order by id asc");
     return res.status(200).json({ users: users.rows });
   } catch (error) {
     console.error("Get users error:", error);
