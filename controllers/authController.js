@@ -130,7 +130,7 @@ const updateUserStatus = async (req, res) => {
       "User status updated: Username: " +
         user.rows[0].username +
         " Status: " +
-        !status.toString(),
+        !status.toString()=="true"?"Active":"Inactive",
     ]);
     return res
       .status(200)
