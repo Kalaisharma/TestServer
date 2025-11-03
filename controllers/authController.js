@@ -88,6 +88,7 @@ const getUsers = async (req, res) => {
 
 const logout = async (req, res) => {
   try {
+    const { username } = req.body;
     const token = req.cookies.authToken;
     if (token) {
       res.clearCookie("authToken", {
@@ -99,7 +100,7 @@ const logout = async (req, res) => {
       });
     }
     await pool.query("INSERT INTO audit_logs (action) VALUES ($1)", [
-      "Logout successful: Username: " + req.user.username,
+      "Logout successful: Username: " + username
     ]);
     return res.status(200).json({ message: "Logout successful" });
   } catch (error) {
