@@ -116,8 +116,8 @@ const updateUserStatus = async (req, res) => {
     const user = await pool.query("SELECT * FROM user_accounts WHERE id = $1", [
       id,
     ]);
-    if (!user.rows[0] || !user.rows[0].status) {
-      return res.status(404).json({ message: "User not found or inactive" });
+    if (!user.rows[0]) {
+      return res.status(404).json({ message: "User not found" });
     }
     const status = user.rows[0].status;
     console.log(status, "status");
