@@ -119,16 +119,16 @@ const updateUserStatus = async (req, res) => {
     if (!user.rows[0] || !user.rows[0].status) {
       return res.status(404).json({ message: "User not found or inactive" });
     }
-    const status = !user.rows[0].status;
+    const status = user.rows[0].status;
     await pool.query("UPDATE user_accounts SET status = $1 WHERE id = $2", [
-      status,
+      !status,
       id,
     ]);
     await pool.query("INSERT INTO audit_logs (action) VALUES ($1)", [
       "User status updated: Username: " +
         user.rows[0].username +
         " Status: " +
-        status.toString(),
+        !status.toString(),
     ]);
     return res
       .status(200)

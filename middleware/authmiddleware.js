@@ -13,11 +13,7 @@ const verifyToken = (req, res, next) => {
   }
 
   try {
-    console.log("before token verification");
-
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log("after token verification");
-
     req.user = decoded;
     next();
   } catch (error) {

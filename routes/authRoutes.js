@@ -1,7 +1,13 @@
 const express = require("express");
 const router = express.Router();
-const { login, register, getUsers, logout, updateUserStatus } = require("../controllers/authController");
-const verifyToken = require("../middleware/authmiddleware");
+const {
+  login,
+  register,
+  getUsers,
+  logout,
+  updateUserStatus,
+} = require("../controllers/authController");
+const verifyToken = require("../middleware/authmiddleware").default;
 // GET /protocols - Get all protocols
 router.post("/login", login);
 router.post("/register", verifyToken, register);
