@@ -7,7 +7,7 @@ const {
   logout,
   updateUserStatus,
 } = require("../controllers/authController");
-const verifyToken = require("../middleware/authmiddleware").default;
+const verifyToken = require("../middleware/authmiddleware");
 // GET /protocols - Get all protocols
 router.post("/login", login);
 router.post("/register", verifyToken, register);
