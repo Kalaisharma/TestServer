@@ -6,6 +6,7 @@ const {
   updateProtocol,
   getProtocolById,
   updateProtocolStatus,
+  archiveProtocol,
 } = require("../controllers/protocolController");
 const verifyToken = require("../middleware/authmiddleware");
 // GET /protocols - Get all protocols
@@ -22,5 +23,8 @@ router.get("/protocols/:id", verifyToken, getProtocolById);
 
 // PUT /protocols/status/:id - Update a protocol status
 router.put("/protocols/status/:id", verifyToken, updateProtocolStatus);
+
+//PUT /protocols/archive/:id - Archive a protocol
+router.put("/protocols/archive/:id", verifyToken, archiveProtocol);
 
 module.exports = router;

@@ -113,6 +113,7 @@ app.post("/api/setup", async (req, res) => {
         description TEXT,
         equipment TEXT,
         active BOOLEAN DEFAULT TRUE,
+        archived BOOLEAN DEFAULT FALSE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )

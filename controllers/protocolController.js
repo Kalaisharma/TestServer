@@ -158,10 +158,40 @@ const updateProtocolStatus = async (req, res) => {
   }
 };
 
+const archiveProtocol = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const protocol = await pool.query("SELECT * FROM protocols WHERE id = $1", [
+      id,
+    ]);
+    if (!protocol.rows[0]) {
+      return res.status(404).json({ message: "Protocol not found" });
+    }
+    const archivedValue = protocol.rows[0].archived;
+    await pool.query("UPDATE protocols SET archived = $1 WHERE id = $2", [
+      !archivedValue,
+      id,
+    ]);
+    await pool.query("INSERT INTO audit_logs (action) VALUES ($1)", [
+      "Protocol archived: Protocol ID: " +
+        id +
+        " Archived: " +
+        (!archivedValue ? "Archived" : "Unarchived") +
+        " Protocol Name: " +
+        protocol.rows[0].protocolName,
+    ]);
+    return res.status(200).json({ message: "Protocol archived" });
+  } catch (error) {
+    console.error("Error archiving protocol:", error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};
+
 module.exports = {
   getAllProtocols,
   createProtocol,
   updateProtocol,
   getProtocolById,
   updateProtocolStatus,
+  archiveProtocol,
 };
