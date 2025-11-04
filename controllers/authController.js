@@ -31,13 +31,13 @@ const login = async (req, res) => {
         id: user.rows[0].id,
       },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: "1m" }
     );
     res.cookie("authToken", token, {
       httpOnly: true,
       secure: false,
       sameSite: "lax",
-      maxAge: 1000 * 60 * 60 * 1,
+      maxAge: 1000 * 60 * 1,
       path: "/",
     });
     return res.status(200).json({
