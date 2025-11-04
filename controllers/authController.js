@@ -31,13 +31,13 @@ const login = async (req, res) => {
         id: user.rows[0].id,
       },
       process.env.JWT_SECRET,
-      { expiresIn: "1m" }
+      { expiresIn: "1h" }
     );
     res.cookie("authToken", token, {
       httpOnly: true,
       secure: false,
       sameSite: "lax",
-      maxAge: 1000 * 60 * 1,
+      maxAge: 1000 * 60 * 60 * 1,
       path: "/",
     });
     return res.status(200).json({
@@ -78,7 +78,9 @@ const register = async (req, res) => {
 
 const getUsers = async (req, res) => {
   try {
-    const users = await pool.query("SELECT * FROM user_accounts order by id asc");
+    const users = await pool.query(
+      "SELECT * FROM user_accounts order by id asc"
+    );
     return res.status(200).json({ users: users.rows });
   } catch (error) {
     console.error("Get users error:", error);
