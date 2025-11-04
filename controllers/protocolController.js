@@ -132,14 +132,24 @@ const getProtocolById = async (req, res) => {
 const updateProtocolStatus = async (req, res) => {
   try {
     const { id } = req.params;
-    const protocol = await pool.query("SELECT * FROM protocols WHERE id = $1", [id]);
+    const protocol = await pool.query("SELECT * FROM protocols WHERE id = $1", [
+      id,
+    ]);
     if (!protocol.rows[0]) {
       return res.status(404).json({ message: "Protocol not found" });
     }
     const activeValue = protocol.rows[0].active;
-    await pool.query("UPDATE protocols SET active = $1 WHERE id = $2", [!activeValue, id]);
+    await pool.query("UPDATE protocols SET active = $1 WHERE id = $2", [
+      !activeValue,
+      id,
+    ]);
     await pool.query("INSERT INTO audit_logs (action) VALUES ($1)", [
-      "Protocol status updated: Protocol ID: " + id + " Status: " + (!activeValue ? "Active" : "Inactive") + " Protocol Name: " + protocol.rows[0].protocolName,
+      "Protocol status updated: Protocol ID: " +
+        id +
+        " Status: " +
+        (!activeValue ? "Active" : "Inactive") +
+        " Protocol Name: " +
+        protocol.rows[0].protocolName,
     ]);
     return res.status(200).json({ message: "Protocol status updated" });
   } catch (error) {
