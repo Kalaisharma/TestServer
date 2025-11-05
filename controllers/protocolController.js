@@ -187,9 +187,26 @@ const archiveProtocol = async (req, res) => {
   }
 };
 
+const getActiveProtocols = async (req, res) => {
+  try {
+    const result = await pool.query(
+      "SELECT * FROM protocols WHERE active = $1",
+      [true]
+    );
+    res.json({
+      success: true,
+      data: result.rows,
+    });
+  } catch (error) {
+    console.error("Error getting active protocols:", error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};
+
 module.exports = {
   getAllProtocols,
   createProtocol,
+  getActiveProtocols,
   updateProtocol,
   getProtocolById,
   updateProtocolStatus,

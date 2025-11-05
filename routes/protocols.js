@@ -6,11 +6,15 @@ const {
   updateProtocol,
   getProtocolById,
   updateProtocolStatus,
+  getActiveProtocols,
   archiveProtocol,
 } = require("../controllers/protocolController");
 const verifyToken = require("../middleware/authmiddleware");
 // GET /protocols - Get all protocols
 router.get("/protocols", verifyToken, getAllProtocols);
+
+// GET /protocols/active - Get all active protocols from desktop application
+router.get("/protocols/active", getActiveProtocols);
 
 // POST /protocols - Create a new protocol
 router.post("/protocols", verifyToken, createProtocol);
