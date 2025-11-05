@@ -25,6 +25,9 @@ router.put("/protocols/:id", verifyToken, updateProtocol);
 // GET /protocols/:id - Get a protocol by ID
 router.get("/protocols/:id", verifyToken, getProtocolById);
 
+// GET /protocols/active - Get all active protocols from desktop application
+router.get("/protocols/:id", getProtocolById);
+
 // PUT /protocols/status/:id - Update a protocol status
 router.put("/protocols/status/:id", verifyToken, updateProtocolStatus);
 
