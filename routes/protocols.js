@@ -14,7 +14,7 @@ const verifyToken = require("../middleware/authmiddleware");
 router.get("/protocols", verifyToken, getAllProtocols);
 
 // GET /protocols/active - Get all active protocols from desktop application
-router.get("/protocols/active", getActiveProtocols);
+router.get("/desktop-protocols/active", getActiveProtocols);
 
 // POST /protocols - Create a new protocol
 router.post("/protocols", verifyToken, createProtocol);
@@ -26,7 +26,7 @@ router.put("/protocols/:id", verifyToken, updateProtocol);
 router.get("/protocols/:id", verifyToken, getProtocolById);
 
 // GET /protocols/active - Get all active protocols from desktop application
-router.get("/protocols/:id", getProtocolById);
+router.get("/desktop-protocols/:id", getProtocolById);
 
 // PUT /protocols/status/:id - Update a protocol status
 router.put("/protocols/status/:id", verifyToken, updateProtocolStatus);
