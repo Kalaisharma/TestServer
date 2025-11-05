@@ -190,8 +190,8 @@ const archiveProtocol = async (req, res) => {
 const getActiveProtocols = async (req, res) => {
   try {
     const result = await pool.query(
-      "SELECT * FROM protocols WHERE active = $1",
-      [true]
+      "SELECT * FROM protocols WHERE active = $1 AND archived = $2",
+      [true, false]
     );
     res.json({
       success: true,
