@@ -36,4 +36,21 @@ const createExperiment = async (req, res) => {
     });
   }
 };
-module.exports = { createExperiment };
+
+
+const getExperiments = async (req, res) => {
+  try {
+    const result = await pool.query("SELECT experiments.id, experiments.protocol_id, experiments.comments, protocols.protocolName, experiments.created_at, experiments.approval_status FROM experiments INNER JOIN protocols ON experiments.protocol_id = protocols.id");
+    return res.status(200).json({
+      success: true,
+      data: result.rows,
+    });
+  } catch (error) {
+    console.error("Error getting experiments:", error);
+    return res.status(500).json({
+      success: false,
+      error: "Internal server error",
+    });
+  }
+};
+module.exports = { createExperiment, getExperiments };

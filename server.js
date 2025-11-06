@@ -133,6 +133,7 @@ app.post("/api/setup", async (req, res) => {
         temperature_data TEXT,
         experiment_data TEXT,
         comments TEXT,
+        approval_status VARCHAR(100) DEFAULT 'pending',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
