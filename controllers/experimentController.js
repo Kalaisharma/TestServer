@@ -2,7 +2,7 @@ const { pool } = require("../database/db");
 
 const createExperiment = async (req, res) => {
   try {
-      console.log(JSON.parse(req.body), "req.body");
+      console.log(req.body, "req.body");
       const { selectedProtocol, comment, temperatureData, experimentData } = JSON.parse(req.body);
     const result = await pool.query(
       "INSERT INTO experiments (protocol_id, temperature_data, experiment_data, comments) VALUES ($1, $2, $3, $4) RETURNING *",
