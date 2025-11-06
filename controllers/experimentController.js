@@ -37,7 +37,6 @@ const createExperiment = async (req, res) => {
   }
 };
 
-
 const getExperiments = async (req, res) => {
   try {
     const result = await pool.query(
@@ -55,4 +54,60 @@ const getExperiments = async (req, res) => {
     });
   }
 };
-module.exports = { createExperiment, getExperiments };
+
+const updateExperimentApprovalStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { approval_status } = req.body;
+    const experiment = await pool.query(
+      "SELECT * FROM experiments WHERE id = $1",
+      [id]
+    );
+    if (!experiment.rows[0]) {
+      return res.status(404).json({
+        success: false,
+        error: "Experiment not found",
+      });
+    }
+    const result = await pool.query(
+      "UPDATE experiments SET approval_status = $1 WHERE id = $2",
+      [approval_status, id]
+    );
+    if (approval_status === "Approved") {
+      await pool.query(
+        "INSERT INTO audit_logs (action) VALUES ($1) RETURNING *",
+        [
+          "Experiment approved: " +
+            id +
+            " Experiment: " +
+            experiment.rows[0].comments,
+        ]
+      );
+    } else {
+      await pool.query(
+        "INSERT INTO audit_logs (action) VALUES ($1) RETURNING *",
+        [
+          "Experiment rejected: " +
+            id +
+            " Experiment: " +
+            experiment.rows[0].comments,
+        ]
+      );
+    }
+    return res.status(200).json({
+      success: true,
+      message: "Experiment approval status updated successfully",
+    });
+  } catch (error) {
+    console.error("Error updating experiment approval status:", error);
+    return res.status(500).json({
+      success: false,
+      error: "Internal server error",
+    });
+  }
+};
+module.exports = {
+  createExperiment,
+  getExperiments,
+  updateExperimentApprovalStatus,
+};
