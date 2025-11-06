@@ -23,6 +23,7 @@ const io = socketIo(server, {
       "http://localhost:5173",
       "http://192.168.1.31:3000",
       "http://192.168.1.31:5173",
+      "*",
     ],
     methods: ["GET", "POST"],
     credentials: true,
@@ -44,7 +45,7 @@ const PORT = process.env.SERVER_PORT || 3000;
 
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://192.168.1.31:3000"],
+    origin: ["http://localhost:5173", "http://192.168.1.31:3000", "*"],
     credentials: true,
   })
 );
