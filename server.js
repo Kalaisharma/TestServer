@@ -10,7 +10,7 @@ const protocolRouter = require("./routes/protocols");
 const auditRouter = require("./routes/auditRoutes");
 const authRouter = require("./routes/authRoutes");
 const { pool, testConnection } = require("./database/db");
-
+const experimentRouter = require("./routes/experimentRoutes");
 const app = express();
 
 // Create HTTP server
@@ -53,7 +53,7 @@ app.use(
 app.use("/api", protocolRouter);
 app.use("/api", auditRouter);
 app.use("/api", authRouter);
-
+app.use("/api", experimentRouter);
 // app.get("/", (req, res) => {
 //   res.sendFile(path.join(__dirname, "dist/index.html"));
 // });
@@ -123,6 +123,15 @@ app.post("/api/setup", async (req, res) => {
       CREATE TABLE IF NOT EXISTS audit_logs (
         id SERIAL PRIMARY KEY,
         action VARCHAR(100) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS experiments (
+        id SERIAL PRIMARY KEY,
+        protocol_id INT NOT NULL REFERENCES protocols(id),
+        experiment_data TEXT,
+        comments TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
