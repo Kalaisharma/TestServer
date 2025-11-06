@@ -130,6 +130,7 @@ app.post("/api/setup", async (req, res) => {
       CREATE TABLE IF NOT EXISTS experiments (
         id SERIAL PRIMARY KEY,
         protocol_id INT NOT NULL REFERENCES protocols(id),
+        temperature_data TEXT,
         experiment_data TEXT,
         comments TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
