@@ -1,3 +1,5 @@
+const { pool } = require("../database/db");
+
 const createExperiment = async (req, res) => {
   try {
     const { selectedProtocol, comments, temperatureData } = req.body;
