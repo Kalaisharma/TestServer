@@ -40,7 +40,9 @@ const createExperiment = async (req, res) => {
 
 const getExperiments = async (req, res) => {
   try {
-    const result = await pool.query("SELECT experiments.id, experiments.protocol_id, experiments.comments, protocols.protocolName, experiments.created_at, experiments.approval_status FROM experiments INNER JOIN protocols ON experiments.protocol_id = protocols.id");
+    const result = await pool.query(
+      `SELECT experiments.id, experiments.protocol_id, experiments.comments, protocols."protocolName", experiments.created_at, experiments.approval_status FROM experiments INNER JOIN protocols ON experiments.protocol_id = protocols.id`
+    );
     return res.status(200).json({
       success: true,
       data: result.rows,
