@@ -2,7 +2,7 @@ const { pool } = require("../database/db");
 
 const createExperiment = async (req, res) => {
   try {
-    console.log(req.body, "req.body");
+    console.log(req.body, "req.body from try");
     const { selectedProtocol, comment, temperatureData, experimentData } =
       req.body;
     const result = await pool.query(
@@ -28,7 +28,7 @@ const createExperiment = async (req, res) => {
       message: "Experiment created successfully",
     });
   } catch (error) {
-    console.log(req.body, "req.body");
+    console.log(req.body, "req.body from catch");
     console.error("Error creating experiment:", error);
     return res.status(500).json({
       success: false,
