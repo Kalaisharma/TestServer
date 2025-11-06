@@ -2,8 +2,9 @@ const { pool } = require("../database/db");
 
 const createExperiment = async (req, res) => {
   try {
-      console.log(req.body, "req.body");
-      const { selectedProtocol, comment, temperatureData, experimentData } = JSON.parse(req.body);
+    console.log(req.body, "req.body");
+    const { selectedProtocol, comment, temperatureData, experimentData } =
+      JSON.parse(req.body);
     const result = await pool.query(
       "INSERT INTO experiments (protocol_id, temperature_data, experiment_data, comments) VALUES ($1, $2, $3, $4) RETURNING *",
       [
@@ -27,6 +28,7 @@ const createExperiment = async (req, res) => {
       message: "Experiment created successfully",
     });
   } catch (error) {
+    console.log(req.body, "req.body");
     console.error("Error creating experiment:", error);
     return res.status(500).json({
       success: false,
