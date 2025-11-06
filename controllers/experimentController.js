@@ -106,8 +106,30 @@ const updateExperimentApprovalStatus = async (req, res) => {
     });
   }
 };
+
+const getExperimentById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await pool.query(
+      `SELECT experiments.id, experiments.protocol_id, experiments.comments, experiments.temperature_data, experiments.experiment_data, experiments.approval_status, protocols."protocolName", protocols.description, protocols.equipment, experiments.created_at FROM experiments INNER JOIN protocols ON experiments.protocol_id = protocols.id WHERE experiments.id = $1`,
+      [id]
+    );
+    return res.status(200).json({
+      success: true,
+      data: result.rows[0],
+    });
+  } catch (error) {
+    console.error("Error getting experiment by id:", error);
+    return res.status(500).json({
+      success: false,
+      error: "Internal server error",
+    });
+  }
+};
+
 module.exports = {
   createExperiment,
   getExperiments,
   updateExperimentApprovalStatus,
+  getExperimentById,
 };
