@@ -59,7 +59,14 @@ app.use(express.static(path.join(__dirname, "dist")));
 // ✅ SPA fallback - MUST be after static files
 
 app.get(
-  ["/", "/protocols", "/logs", "/user-management", "/register"],
+  [
+    "/",
+    "/protocols",
+    "/logs",
+    "/user-management",
+    "/register",
+    "/document-approval",
+  ],
   (req, res) => {
     // Don't handle API routes
     if (req.path.startsWith("/api/")) {
