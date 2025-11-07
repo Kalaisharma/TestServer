@@ -66,6 +66,7 @@ app.get(
     "/user-management",
     "/register",
     "/document-approval",
+    "/unauthorized",
   ],
   (req, res) => {
     // Don't handle API routes
