@@ -19,7 +19,7 @@ app.use(express.json());
 app.use(cookieParser());
 const io = socketIo(server, {
   cors: {
-    origin: true, // Allow all origins for development (mobile access)
+    origin: ["http://localhost:5173", "http://192.168.1.100:3000"], // Allow all origins for development (mobile access)
     methods: ["GET", "POST"],
     credentials: true,
   },
@@ -40,7 +40,7 @@ const PORT = process.env.SERVER_PORT || 3000;
 
 app.use(
   cors({
-    origin: true, // Allow all origins for development (mobile access)
+    origin: ["http://localhost:5173", "http://192.168.1.100:3000"], // Allow all origins for development (mobile access)
     credentials: true,
   })
 );
