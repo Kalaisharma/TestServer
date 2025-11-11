@@ -13,15 +13,144 @@ const { pool, testConnection } = require("./database/db");
 const experimentRouter = require("./routes/experimentRoutes");
 const app = express();
 
+// Get server's local IP and subnet
+function getLocalIP() {
+  const interfaces = require("os").networkInterfaces();
+  for (const interface of Object.values(interfaces).flat()) {
+    if (interface.family === "IPv4" && !interface.internal) {
+      return interface.address;
+    }
+  }
+  return "localhost";
+}
+
+const SERVER_IP = getLocalIP();
+const SERVER_SUBNET = SERVER_IP.split(".").slice(0, 3).join("."); // e.g., "192.168.1"
+
+// Check if IP is in the same subnet
+function isSameSubnet(ip) {
+  if (!ip || ip === "localhost" || ip === "127.0.0.1" || ip === "::1") {
+    return true; // Allow localhost
+  }
+
+  // Extract IP from various formats (could be "192.168.1.100" or "::ffff:192.168.1.100")
+  const ipv4Match = ip.match(/(\d+\.\d+\.\d+\.\d+)/);
+  if (!ipv4Match) return false;
+
+  const clientSubnet = ipv4Match[1].split(".").slice(0, 3).join(".");
+  return clientSubnet === SERVER_SUBNET;
+}
+
+// Check if origin is from same subnet
+function isSameSubnetOrigin(origin) {
+  if (!origin) return false;
+
+  // Allow localhost for development
+  if (origin.includes("localhost") || origin.includes("127.0.0.1")) {
+    return true;
+  }
+
+  // Extract IP from origin URL (e.g., "http://192.168.1.100:3000")
+  const urlMatch = origin.match(/https?:\/\/([\d.]+)/);
+  if (!urlMatch) return false;
+
+  return isSameSubnet(urlMatch[1]);
+}
+
+// Dynamic CORS origin validator
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, Postman, etc.)
+    if (!origin) {
+      return callback(null, true);
+    }
+
+    if (isSameSubnetOrigin(origin)) {
+      callback(null, true);
+    } else {
+      console.warn(
+        `🚫 CORS blocked: ${origin} (not in subnet ${SERVER_SUBNET}.x)`
+      );
+      callback(
+        new Error(
+          `Not allowed by CORS. Must be from same LAN subnet (${SERVER_SUBNET}.x)`
+        )
+      );
+    }
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
+
 // Create HTTP server
 const server = http.createServer(app);
+
+// Trust proxy to get correct client IP (important for mobile devices behind routers)
+app.set("trust proxy", true);
+
 app.use(express.json());
 app.use(cookieParser());
+
+// Middleware to validate client IP is in same subnet
+app.use((req, res, next) => {
+  // Allow CORS preflight requests to pass through
+  if (req.method === "OPTIONS") {
+    return next();
+  }
+
+  // Get client IP with proper handling for proxied connections
+  const forwardedIP = req.headers["x-forwarded-for"]?.split(",")[0]?.trim();
+  const clientIP =
+    forwardedIP ||
+    req.ip ||
+    req.connection?.remoteAddress ||
+    req.socket?.remoteAddress;
+  const actualIP = clientIP || "unknown";
+
+  // Log connection attempt for debugging
+  if (req.path !== "/favicon.ico") {
+    console.log(`📡 Request from ${actualIP} to ${req.method} ${req.path}`);
+  }
+
+  if (!isSameSubnet(actualIP)) {
+    console.warn(
+      `🚫 Access denied: ${actualIP} (not in subnet ${SERVER_SUBNET}.x)`
+    );
+    return res.status(403).json({
+      error:
+        "Access denied. Server only accepts connections from the same LAN subnet.",
+      requiredSubnet: `${SERVER_SUBNET}.x`,
+      yourIP: actualIP,
+    });
+  }
+
+  next();
+});
+
 const io = socketIo(server, {
-  cors: {
-    origin: ["http://localhost:5173", "http://192.168.1.100:3000"], // Allow all origins for development (mobile access)
-    methods: ["GET", "POST"],
-    credentials: true,
+  cors: corsOptions,
+  allowRequest: (req, callback) => {
+    const forwardedIP = req.headers["x-forwarded-for"]?.split(",")[0]?.trim();
+    const clientIP =
+      forwardedIP ||
+      req.connection?.remoteAddress ||
+      req.socket?.remoteAddress ||
+      req.headers["x-real-ip"];
+
+    if (isSameSubnet(clientIP)) {
+      callback(null, true);
+    } else {
+      console.warn(
+        `🚫 Socket.io blocked: ${clientIP} (not in subnet ${SERVER_SUBNET}.x)`
+      );
+      callback(
+        new Error(
+          `Not allowed. Must be from same LAN subnet (${SERVER_SUBNET}.x)`
+        ),
+        false
+      );
+    }
   },
 });
 
@@ -29,21 +158,19 @@ app.set("io", io);
 
 // Socket.io connection handling
 io.on("connection", (socket) => {
-  console.log("🔌 New client connected:", socket.id);
+  const clientIP =
+    socket.handshake.address || socket.request.connection.remoteAddress;
+  console.log(`🔌 New client connected: ${socket.id} from ${clientIP}`);
 
   socket.on("disconnect", () => {
-    console.log("🔌 Client disconnected:", socket.id);
+    console.log(`🔌 Client disconnected: ${socket.id} from ${clientIP}`);
   });
 });
 
 const PORT = process.env.SERVER_PORT || 3000;
 
-app.use(
-  cors({
-    origin: ["http://localhost:5173", "http://192.168.1.100:3000"], // Allow all origins for development (mobile access)
-    credentials: true,
-  })
-);
+// Apply CORS middleware
+app.use(cors(corsOptions));
 
 // Use protocol routes
 app.use("/api", protocolRouter);
@@ -279,23 +406,16 @@ const startServer = async () => {
       );
       console.log(`🔌 WebSocket server ready on port ${PORT}`);
       console.log(`📱 Local: http://localhost:${PORT}`);
-      console.log(`🌐 LAN: http://${getLocalIP()}:${PORT}`);
+      console.log(`🌐 LAN: http://${SERVER_IP}:${PORT}`);
+      console.log(
+        `🔒 Security: Only accepting connections from subnet ${SERVER_SUBNET}.x`
+      );
     });
   } catch (error) {
     console.error("Failed to start server:", error);
     process.exit(1);
   }
 };
-
-function getLocalIP() {
-  const interfaces = require("os").networkInterfaces();
-  for (const interface of Object.values(interfaces).flat()) {
-    if (interface.family === "IPv4" && !interface.internal) {
-      return interface.address;
-    }
-  }
-  return "localhost";
-}
 
 startServer();
 module.exports = { app, server, io };
