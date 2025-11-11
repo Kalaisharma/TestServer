@@ -13,105 +13,37 @@ const { pool, testConnection } = require("./database/db");
 const experimentRouter = require("./routes/experimentRoutes");
 const app = express();
 
-// Function to check if origin is from LAN (192.168.1.x subnet)
-function isLanOrigin(origin) {
-  if (!origin) return false;
-
-  // Allow localhost for development
-  if (origin.includes("localhost") || origin.includes("127.0.0.1")) {
-    return true;
-  }
-
-  // Check if origin is from 192.168.1.x subnet
-  const lanPattern =
-    /^https?:\/\/(192\.168\.1\.\d+|localhost|127\.0\.0\.1)(:\d+)?$/;
-  return lanPattern.test(origin);
-}
-
-// CORS configuration - Allow any origin from LAN subnet
-const corsOptions = {
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) {
-      return callback(null, true);
-    }
-
-    if (isLanOrigin(origin)) {
-      callback(null, true);
-    } else {
-      console.warn(`⚠️  Blocked CORS request from: ${origin}`);
-      callback(new Error("Not allowed by CORS - Only LAN connections allowed"));
-    }
-  },
-  credentials: true,
-  optionsSuccessStatus: 200, // Some legacy browsers (IE11, various SmartTVs) choke on 204
-};
-
-// Create HTTP server with keep-alive settings for mobile devices
+// Create HTTP server
 const server = http.createServer(app);
-server.keepAliveTimeout = 65000; // 65 seconds
-server.headersTimeout = 66000; // 66 seconds
-
 app.use(express.json());
 app.use(cookieParser());
-
-// Socket.io configuration with dynamic LAN origin checking
 const io = socketIo(server, {
   cors: {
-    origin: function (origin, callback) {
-      if (!origin || isLanOrigin(origin)) {
-        callback(null, true);
-      } else {
-        console.warn(`⚠️  Blocked Socket.io connection from: ${origin}`);
-        callback(
-          new Error("Not allowed by CORS - Only LAN connections allowed")
-        );
-      }
-    },
+    origin: ["http://localhost:5173", "http://192.168.1.31:3000"], // Allow all origins for development (mobile access)
     methods: ["GET", "POST"],
     credentials: true,
   },
-  pingTimeout: 60000, // 60 seconds for mobile devices
-  pingInterval: 25000, // 25 seconds
-  transports: ["websocket", "polling"], // Support both transports
 });
 
 app.set("io", io);
 
-// Socket.io connection handling with better logging
+// Socket.io connection handling
 io.on("connection", (socket) => {
-  const clientIP = socket.handshake.address;
-  const origin = socket.handshake.headers.origin || "unknown";
-  console.log(`🔌 New client connected: ${socket.id}`);
-  console.log(`   IP: ${clientIP}, Origin: ${origin}`);
+  console.log("🔌 New client connected:", socket.id);
 
-  // Handle connection errors
-  socket.on("error", (error) => {
-    console.error(`❌ Socket error for ${socket.id}:`, error.message);
-  });
-
-  socket.on("disconnect", (reason) => {
-    console.log(`🔌 Client disconnected: ${socket.id}, Reason: ${reason}`);
+  socket.on("disconnect", () => {
+    console.log("🔌 Client disconnected:", socket.id);
   });
 });
 
 const PORT = process.env.SERVER_PORT || 3000;
 
-// Apply CORS middleware
-app.use(cors(corsOptions));
-
-// Add request logging middleware for debugging
-app.use((req, res, next) => {
-  const origin = req.headers.origin || "no-origin";
-  const userAgent = req.headers["user-agent"] || "unknown";
-  console.log(
-    `📥 ${req.method} ${req.path} from ${origin} (${userAgent.substring(
-      0,
-      50
-    )})`
-  );
-  next();
-});
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "http://192.168.1.31:3000"], // Allow all origins for development (mobile access)
+    credentials: true,
+  })
+);
 
 // Use protocol routes
 app.use("/api", protocolRouter);
@@ -341,17 +273,13 @@ const startServer = async () => {
     }
 
     server.listen(PORT, "0.0.0.0", () => {
-      const serverIP = getLocalIP();
       console.log(`🚀 Server running on http://localhost:${PORT}`);
       console.log(
         `📊 Connected to PostgreSQL on Raspberry Pi: ${process.env.DB_HOST}`
       );
       console.log(`🔌 WebSocket server ready on port ${PORT}`);
       console.log(`📱 Local: http://localhost:${PORT}`);
-      console.log(`🌐 LAN: http://${serverIP}:${PORT}`);
-      console.log(`✅ CORS enabled for LAN subnet: 192.168.1.x`);
-      console.log(`✅ Keep-alive timeout: ${server.keepAliveTimeout}ms`);
-      console.log(`✅ Socket.io ping timeout: ${io.engine.pingTimeout}ms`);
+      console.log(`🌐 LAN: http://${getLocalIP()}:${PORT}`);
     });
   } catch (error) {
     console.error("Failed to start server:", error);
