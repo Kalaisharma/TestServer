@@ -119,6 +119,7 @@ app.use((req, res, next) => {
       req.ip || req.connection.remoteAddress || req.headers["x-forwarded-for"],
     userAgent: req.headers["user-agent"],
   };
+  console.log("UserAgent:", req.headers["user-agent"]);
 
   if (deviceInfo.userAgent.includes("Electron")) {
     console.log("Electron detected");
