@@ -4,7 +4,8 @@ const path = require("path");
 const http = require("http");
 const socketIo = require("socket.io");
 const cookieParser = require("cookie-parser");
-const useragent = require("express-useragent");
+const expressUseragent = require("express-useragent");
+const useragent = require("useragent");
 
 require("dotenv").config();
 const protocolRouter = require("./routes/protocols");
@@ -28,17 +29,32 @@ const io = socketIo(server, {
 
 app.set("io", io);
 
+// Helper function to detect mobile/tablet from user agent string
+function isMobileDevice(userAgentString) {
+  const mobileRegex =
+    /Mobile|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
+  return mobileRegex.test(userAgentString);
+}
+
+function isTabletDevice(userAgentString) {
+  const tabletRegex = /iPad|Android(?!.*Mobile)|Tablet|PlayBook|Silk/i;
+  return tabletRegex.test(userAgentString);
+}
+
 // Socket.io connection handling with device detection
 io.use((socket, next) => {
-  const userAgent = socket.handshake.headers["user-agent"] || "";
-  const ua = useragent.parse(userAgent);
+  const userAgentString = socket.handshake.headers["user-agent"] || "";
+  const parsedUA = useragent.parse(userAgentString);
+
+  const isMobile = isMobileDevice(userAgentString);
+  const isTablet = isTabletDevice(userAgentString);
 
   const deviceInfo = {
-    device: ua.isMobile ? "Mobile" : ua.isTablet ? "Tablet" : "Desktop",
-    platform: ua.platform,
-    os: ua.os,
-    browser: ua.browser,
-    version: ua.version,
+    device: isMobile ? "Mobile" : isTablet ? "Tablet" : "Desktop",
+    platform: parsedUA.os.family || "Unknown",
+    os: parsedUA.os.toString() || "Unknown",
+    browser: parsedUA.family || "Unknown",
+    version: parsedUA.toVersion() || "Unknown",
     ip: socket.handshake.address,
   };
 
@@ -48,11 +64,12 @@ io.use((socket, next) => {
     platform: deviceInfo.platform,
     os: deviceInfo.os,
     browser: deviceInfo.browser,
+    version: deviceInfo.version,
     ip: deviceInfo.ip,
   });
 
   // Block mobile and tablet devices
-  if (ua.isMobile || ua.isTablet) {
+  if (isMobile || isTablet) {
     console.log(
       `❌ WebSocket access denied: ${deviceInfo.device} device detected`
     );
@@ -83,7 +100,7 @@ app.use(
 );
 
 // User agent parsing middleware
-app.use(useragent.express());
+app.use(expressUseragent.express());
 
 // Device detection middleware - Block non-desktop devices
 app.use((req, res, next) => {

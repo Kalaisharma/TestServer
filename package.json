@@ -21,7 +21,8 @@
     "express-useragent": "^2.0.2",
     "jsonwebtoken": "^9.0.2",
     "pg": "^8.16.3",
-    "socket.io": "^4.8.1"
+    "socket.io": "^4.8.1",
+    "useragent": "^2.3.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.10"
