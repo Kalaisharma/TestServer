@@ -120,6 +120,14 @@ app.use((req, res, next) => {
     userAgent: req.headers["user-agent"],
   };
 
+  if (deviceInfo.userAgent.includes("Electron")) {
+    deviceInfo.device = "Desktop";
+    deviceInfo.platform = "Desktop";
+    deviceInfo.os = "Desktop";
+    deviceInfo.browser = "Chrome";
+    deviceInfo.userAgent = "Electron";
+  }
+
   // Log device information
   console.log("📱 Device Info:", {
     device: deviceInfo.device,
@@ -132,7 +140,7 @@ app.use((req, res, next) => {
   });
 
   // Block mobile and tablet devices
-  if (req.useragent.isMobile || req.useragent.isTablet) {
+  if (deviceInfo.device==="Mobile" || deviceInfo.device==="Tablet") {
     console.log(`❌ Access denied: ${deviceInfo.device} device detected`);
 
     // If it's an API request, return JSON
