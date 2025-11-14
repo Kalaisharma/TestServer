@@ -121,6 +121,7 @@ app.use((req, res, next) => {
   };
 
   if (deviceInfo.userAgent.includes("Electron")) {
+    console.log("Electron detected");
     deviceInfo.device = "Desktop";
     deviceInfo.platform = "Desktop";
     deviceInfo.os = "Desktop";
