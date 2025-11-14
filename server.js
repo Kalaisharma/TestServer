@@ -134,15 +134,129 @@ app.use((req, res, next) => {
   // Block mobile and tablet devices
   if (req.useragent.isMobile || req.useragent.isTablet) {
     console.log(`❌ Access denied: ${deviceInfo.device} device detected`);
-    return res.status(403).json({
-      success: false,
-      message: "Access denied: Desktop devices only",
-      deviceInfo: {
-        device: deviceInfo.device,
-        platform: deviceInfo.platform,
-        os: deviceInfo.os,
-      },
-    });
+
+    // If it's an API request, return JSON
+    if (req.path.startsWith("/api/")) {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied: Desktop devices only",
+        deviceInfo: {
+          device: deviceInfo.device,
+          platform: deviceInfo.platform,
+          os: deviceInfo.os,
+        },
+      });
+    }
+
+    // For regular page requests, return HTML
+    const htmlPage = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Access Denied - Desktop Only</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+            padding: 40px;
+            text-align: center;
+        }
+        .icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        p {
+            color: #666;
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+        .device-info {
+            background: #f5f5f5;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        .device-info h3 {
+            color: #333;
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .device-info p {
+            color: #666;
+            font-size: 14px;
+            margin: 5px 0;
+        }
+        .button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">🚫</div>
+        <h1>Access Denied</h1>
+        <p>This application is only accessible from desktop devices. Please use a desktop or laptop computer to access this service.</p>
+        
+        <div class="device-info">
+            <h3>Detected Device Information</h3>
+            <p><strong>Device Type:</strong> ${deviceInfo.device}</p>
+            <p><strong>Platform:</strong> ${deviceInfo.platform}</p>
+            <p><strong>Operating System:</strong> ${deviceInfo.os}</p>
+            <p><strong>Browser:</strong> ${deviceInfo.browser} ${
+      deviceInfo.version || ""
+    }</p>
+        </div>
+        
+        <p style="font-size: 14px; color: #999; margin-top: 20px;">
+            If you believe this is an error, please contact the administrator.
+        </p>
+    </div>
+</body>
+</html>
+    `;
+
+    return res.status(403).send(htmlPage);
   }
 
   // Allow desktop devices
