@@ -4,6 +4,7 @@ const path = require("path");
 const http = require("http");
 const socketIo = require("socket.io");
 const cookieParser = require("cookie-parser");
+const useragent = require("express-useragent");
 
 require("dotenv").config();
 const protocolRouter = require("./routes/protocols");
@@ -27,9 +28,45 @@ const io = socketIo(server, {
 
 app.set("io", io);
 
-// Socket.io connection handling
+// Socket.io connection handling with device detection
+io.use((socket, next) => {
+  const userAgent = socket.handshake.headers["user-agent"] || "";
+  const ua = useragent.parse(userAgent);
+
+  const deviceInfo = {
+    device: ua.isMobile ? "Mobile" : ua.isTablet ? "Tablet" : "Desktop",
+    platform: ua.platform,
+    os: ua.os,
+    browser: ua.browser,
+    version: ua.version,
+    ip: socket.handshake.address,
+  };
+
+  console.log("🔌 WebSocket connection attempt:", {
+    socketId: socket.id,
+    device: deviceInfo.device,
+    platform: deviceInfo.platform,
+    os: deviceInfo.os,
+    browser: deviceInfo.browser,
+    ip: deviceInfo.ip,
+  });
+
+  // Block mobile and tablet devices
+  if (ua.isMobile || ua.isTablet) {
+    console.log(
+      `❌ WebSocket access denied: ${deviceInfo.device} device detected`
+    );
+    return next(new Error("Access denied: Desktop devices only"));
+  }
+
+  // Store device info in socket for later use
+  socket.deviceInfo = deviceInfo;
+  console.log(`✅ WebSocket access granted: Desktop device (${deviceInfo.os})`);
+  next();
+});
+
 io.on("connection", (socket) => {
-  console.log("🔌 New client connected:", socket.id);
+  console.log("🔌 New client connected:", socket.id, socket.deviceInfo);
 
   socket.on("disconnect", () => {
     console.log("🔌 Client disconnected:", socket.id);
@@ -44,6 +81,57 @@ app.use(
     credentials: true,
   })
 );
+
+// User agent parsing middleware
+app.use(useragent.express());
+
+// Device detection middleware - Block non-desktop devices
+app.use((req, res, next) => {
+  const deviceInfo = {
+    device: req.useragent.isMobile
+      ? "Mobile"
+      : req.useragent.isTablet
+      ? "Tablet"
+      : "Desktop",
+    platform: req.useragent.platform,
+    os: req.useragent.os,
+    browser: req.useragent.browser,
+    version: req.useragent.version,
+    source: req.useragent.source,
+    ip:
+      req.ip || req.connection.remoteAddress || req.headers["x-forwarded-for"],
+    userAgent: req.headers["user-agent"],
+  };
+
+  // Log device information
+  console.log("📱 Device Info:", {
+    device: deviceInfo.device,
+    platform: deviceInfo.platform,
+    os: deviceInfo.os,
+    browser: deviceInfo.browser,
+    version: deviceInfo.version,
+    ip: deviceInfo.ip,
+    path: req.path,
+  });
+
+  // Block mobile and tablet devices
+  if (req.useragent.isMobile || req.useragent.isTablet) {
+    console.log(`❌ Access denied: ${deviceInfo.device} device detected`);
+    return res.status(403).json({
+      success: false,
+      message: "Access denied: Desktop devices only",
+      deviceInfo: {
+        device: deviceInfo.device,
+        platform: deviceInfo.platform,
+        os: deviceInfo.os,
+      },
+    });
+  }
+
+  // Allow desktop devices
+  console.log(`✅ Access granted: Desktop device (${deviceInfo.os})`);
+  next();
+});
 
 // Use protocol routes
 app.use("/api", protocolRouter);
